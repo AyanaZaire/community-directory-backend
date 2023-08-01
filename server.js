@@ -35,6 +35,8 @@ const CommentSchema = new mongoose.Schema({
     date: { type: Date, default: Date.now }
   });
 
+const Comment = mongoose.model("Comment", CommentSchema);
+
 const LibrarySchema = new mongoose.Schema({
     name: {type: String, required: true},
     description: String,
@@ -61,13 +63,13 @@ app.get('/libraries', async (request, response) => {
 });
 
 //testing params and find by id
-app.get('/libraries/:id', async (request, response) => {
+app.get('/comments/:id', async (request, response) => {
     const id = request.params.id
     console.log(id)
-    const library = await Library.findById(id)
-    console.log(library)
+    const comment = await Comment.findById(id)
+    console.log(comment)
     try {
-      response.send(library);
+      response.send(comment);
     } catch (error) {
       response.status(500).send(error);
     }
@@ -83,6 +85,24 @@ app.post("/libraries/:id/comments", async (request, response) => {
     try {
       await library.save();
       response.send(library);
+    } catch (error) {
+      response.status(500).send(error);
+    }
+});
+
+app.put("/libraries/:libId/comment/:comId", async (request, response) => {
+    const libId = request.params.libId
+    const comId = request.params.comId
+    const updatedComment = request.body
+    console.log(libId, comId, updatedComment) // { body: 'edited comment' }
+    // const library = await Library.findById(libId)
+    // const libraries = await Library.find({})
+    const updatedLibrary = await Library.updateOne(
+        {_id: libId, "comments._id": comId}, 
+        {$set: {"comments.$.body": updatedComment.body}})
+    try {
+      await updatedLibrary.save();
+      response.send(updatedLibrary);
     } catch (error) {
       response.status(500).send(error);
     }
