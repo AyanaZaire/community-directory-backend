@@ -97,13 +97,31 @@ app.put("/libraries/:libId/comment/:comId", async (request, response) => {
     console.log(libId, comId, updatedComment) // { body: 'edited comment' }
     // const library = await Library.findById(libId)
     // const libraries = await Library.find({})
-    const updatedLibrary = await Library.updateOne(
-        {_id: libId, "comments._id": comId}, 
-        {$set: {"comments.$.body": updatedComment.body}})
+    // const updatedLibrary = await Library.updateOne(
+    //     {_id: libId, "comments._id": comId}, 
+    //     {$set: {"comments.$.body": updatedComment.body}})
+    const updatedLibrary = await Library.findOneAndUpdate(
+      {_id: libId, "comments._id": comId}, 
+      {$set: {"comments.$.body": updatedComment.body}},
+      {returnOriginal : false})
     try {
+      console.log(updatedLibrary)
       await updatedLibrary.save();
       response.send(updatedLibrary);
     } catch (error) {
       response.status(500).send(error);
     }
 });
+
+app.delete("/libraries/:libId/comment/:comId", async (request, response) => {
+    const libId = request.params.libId
+    const comId = request.params.comId
+    const updatedLibrary = await Library.updateOne({$pull: {comments: {_id: comId}}})
+    try {
+      console.log(updatedLibrary)
+      await updatedLibrary.save();
+      response.send(updatedLibrary);
+    } catch (error) {
+      response.status(500).send(error);
+    }
+}) 
