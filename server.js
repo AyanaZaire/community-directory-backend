@@ -116,12 +116,23 @@ app.put("/libraries/:libId/comment/:comId", async (request, response) => {
 app.delete("/libraries/:libId/comment/:comId", async (request, response) => {
     const libId = request.params.libId
     const comId = request.params.comId
-    const updatedLibrary = await Library.updateOne({$pull: {comments: {_id: comId}}})
+    console.log(libId, comId);
+    const updatedLibrary = await Library.updateOne({
+      _id: libId}, 
+      {$pull: {
+        comments: {_id: comId}
+      }
+    })
     try {
       console.log(updatedLibrary)
-      await updatedLibrary.save();
+      // await updatedLibrary.save();
       response.send(updatedLibrary);
     } catch (error) {
-      response.status(500).send(error);
+      // response.status(500).send(error);
+      // https://www.mongodb.com/community/forums/t/mongodb-next-js-crud-api-routes-put-request-failing-500-error/202410/3
+      console.log("internal error");
+      console.dir(error);  // print on server console
+      response.status(500).json({ message: "Internal error", error: error }); // not needed, only if you need in client side
+      return;
     }
 }) 
